@@ -21,6 +21,8 @@ public class Tile {
         this.redraw();
     }
 
+
+
     public void redraw() {
         Graphics2D g = (Graphics2D) this.buffer.getGraphics();
         g.setBackground(new Color(0, 0, 0, 0));
@@ -53,4 +55,6 @@ public class Tile {
             super(x - 3, y - 3, 6, 6);
         }
     }
+
+
 }

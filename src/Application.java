@@ -6,6 +6,7 @@ public class Application extends Frame {
 
     private final int size = 50;
     private Image stageImage = null;
+    boolean seamsborder = false;
 
     public Application(){
         super("Java AWT Examples");
