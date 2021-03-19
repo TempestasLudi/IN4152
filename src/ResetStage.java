@@ -1,18 +1,15 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
-import java.util.Random;
 
-public class RandomPointsStage extends Stage {
-    private final Random random = new Random();
-
-    public RandomPointsStage() {
+public class ResetStage extends Stage {
+    public ResetStage() {
         super(1000);
     }
 
     public Image step(Tile[] tiles) {
         for (Tile tile : tiles) {
-            tile.points.add(new Tile.Point(random.nextDouble() * tile.size, random.nextDouble() * tile.size));
+            tile.points.clear();
             tile.redraw();
         }
 
@@ -27,11 +24,11 @@ public class RandomPointsStage extends Stage {
 
     @Override
     public Optional<Stage> next() {
-        return Optional.of(new SlowPointWalkStage());
+        return Optional.of(new RandomPointsStage());
     }
 
     @Override
     public Optional<Stage> previous() {
-        return Optional.of(new ResetStage());
+        return Optional.empty();
     }
 }
