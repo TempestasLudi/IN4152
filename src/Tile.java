@@ -29,7 +29,7 @@ public class Tile {
         g.clearRect(0, 0, size, size);
 
         Stroke oldStroke = g.getStroke();
-        g.setStroke(new BasicStroke(5));
+        g.setStroke(new BasicStroke(3));
         g.setColor(north);
         g.drawLine(0, 0, size, 0);
         g.setColor(west);

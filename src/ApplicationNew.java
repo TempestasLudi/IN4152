@@ -7,14 +7,23 @@ public class ApplicationNew extends Frame implements KeyListener {
     private final int size = 50;
     private Image stageImage = null;
     private final Random random = new Random();
-    private boolean globalBool = false;
-    private int globalStageCount = 0;
+    private int globalStageCount = 1;
     private final Tile[][] fixedTiling;
 
     public ApplicationNew() {
-        super("Java AWT Examples");
+        super("An implementation of Lloyd's Algorithm");
         prepareGUI();
-        tiles = new Tile[]{new Tile(size, Color.RED, Color.GREEN, Color.RED, Color.GREEN), new Tile(size, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW), new Tile(size, Color.RED, Color.YELLOW, Color.RED, Color.YELLOW), new Tile(size, Color.RED, Color.YELLOW, Color.BLUE, Color.GREEN), new Tile(size, Color.BLUE, Color.GREEN, Color.BLUE, Color.GREEN), new Tile(size, Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW), new Tile(size, Color.BLUE, Color.YELLOW, Color.BLUE, Color.YELLOW), new Tile(size, Color.BLUE, Color.YELLOW, Color.RED, Color.GREEN),};
+        tiles = new Tile[]{
+                new Tile(size, Color.RED, Color.GREEN, Color.RED, Color.GREEN),
+                new Tile(size, Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW),
+                new Tile(size, Color.RED, Color.YELLOW, Color.RED, Color.YELLOW),
+                new Tile(size, Color.RED, Color.YELLOW, Color.BLUE, Color.GREEN),
+                new Tile(size, Color.BLUE, Color.GREEN, Color.BLUE, Color.GREEN),
+                new Tile(size, Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW),
+                new Tile(size, Color.BLUE, Color.YELLOW, Color.BLUE, Color.YELLOW),
+                new Tile(size, Color.BLUE, Color.YELLOW, Color.RED, Color.GREEN),
+        };
+
         Stage stage = new RandomPointsStage();
         addKeyListener(this);
 
@@ -49,17 +58,12 @@ public class ApplicationNew extends Frame implements KeyListener {
 
     @Override
     public void paint(Graphics g) {
-        int stageOne = 1;
-        int stageTwo = 2;
-        if (globalBool) {
-            if (globalStageCount == stageOne) {
-                paintFirstStage(g);
-            } else if (globalStageCount == stageTwo) {
-                paintWangTiling(g);
-            }
+        switch (globalStageCount) {
+            case 1 -> paintFirstStage(g);
+            case 2 -> paintWangTiling(g);
         }
 
-        drawTiling((Graphics2D)g, fixedTiling, 100, 400);
+        drawTiling((Graphics2D) g, fixedTiling, 100, 400);
     }
 
     public void paintFirstStage(Graphics g) {
@@ -155,28 +159,18 @@ public class ApplicationNew extends Frame implements KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            globalBool = true;
-        }
-    }
+    public void keyTyped(KeyEvent keyEvent) { }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            globalBool = true;
             globalStageCount++;
         }
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            globalBool = true;
             globalStageCount--;
         }
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_LEFT) {
-            globalBool = true;
-        }
-    }
+    public void keyReleased(KeyEvent keyEvent) { }
 }
