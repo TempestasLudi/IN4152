@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Tile {
-    public final List<Point> points = new ArrayList<Point>();
+    public final List<Point> points = new ArrayList<>();
     public final Color north, west, south, east;
     public final int size;
     private final Image buffer;

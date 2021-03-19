@@ -1,6 +1,6 @@
 import java.awt.*;
 
-public class PictureDrawStage extends Stage {
+public abstract class PictureDrawStage extends Stage {
     public PictureDrawStage() {
         super((int) 1e9);
     }
