@@ -94,7 +94,16 @@ public class ApplicationNew extends Frame implements KeyListener {
 
     public synchronized void paintWangTiling(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+
+        Image visualisation = createImage(size, size);
+        Graphics2D visualisationGraphics = (Graphics2D) visualisation.getGraphics();
+
         Tile[][] tiling = createTiling(3, 3);
+
+        visualisationGraphics.setColor(Color.RED);
+        for (Tile.Point point : tiling[1][1].points) {
+            visualisationGraphics.fill(point.getShape());
+        }
 
         Tile.Point[] points = IntStream.range(0, 3).mapToObj(
                 x -> IntStream.range(0, 3).mapToObj(
@@ -105,6 +114,7 @@ public class ApplicationNew extends Frame implements KeyListener {
 
         int[] counts = Arrays.stream(points).mapToInt(p -> 0).toArray();
         Tile.Point[] totals = Arrays.stream(points).map(p -> new Tile.Point(0, 0)).toArray(Tile.Point[]::new);
+        int[][] indices = new int[size][size];
 
         for (int x = 0; x < 3 * size; x++) {
             for (int y = 0; y < 3 * size; y++) {
@@ -121,21 +131,40 @@ public class ApplicationNew extends Frame implements KeyListener {
                 counts[index]++;
                 totals[index].x += x;
                 totals[index].y += y;
+
+                if (size <= x && x < size * 2 && size <= y && y < size * 2) {
+                    indices[y - size][x - size] = index;
+                }
             }
         }
 
-        tiling[1][1].points.forEach(point -> {
+        visualisationGraphics.setColor(Color.GREEN);
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if (
+                        (x > 0 && indices[y][x - 1] != indices[y][x]) ||
+                        (x < size - 1 && indices[y][x + 1] != indices[y][x]) ||
+                        (y > 0 && indices[y - 1][x] != indices[y][x]) ||
+                        (y < size - 1 && indices[y + 1][x] != indices[y][x])
+                ) {
+                    visualisationGraphics.drawLine(x, y, x, y);
+                }
+            }
+        }
+
+        for (Tile.Point point : tiling[1][1].points) {
             OptionalInt indexOption = IntStream.range(0, points.length).filter(
                     i -> points[i].equals(new Tile.Point(point.x + size, point.y + size))
             ).findFirst();
-            if (indexOption.isEmpty()) return;
+            if (indexOption.isEmpty()) continue;
             int index = indexOption.getAsInt();
             point.x = Math.min(size, Math.max(0, totals[index].x / counts[index] - size));
             point.y = Math.min(size, Math.max(0, totals[index].y / counts[index] - size));
-        });
+        }
 
         tiling[1][1].redraw();
 
+        g.drawImage(visualisation, 351, 151, this);
         drawTiling(g2, tiling, 300, 100);
 
         if (this.stageImage != null) {
