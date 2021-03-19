@@ -1,17 +1,19 @@
+import javax.swing.*;
 import java.awt.*;
-        import java.awt.event.*;
-import java.util.ArrayList;
+import java.awt.event.*;
 import java.util.Random;
 
-public class ApplicationNew extends Frame {
+public class ApplicationNew extends Frame implements KeyListener{
     private Tile[] tiles;
+    JLabel label;
 
     private final int size = 50;
     private Image stageImage = null;
     int TILES_X = 3, TILES_Y = 3;
     int original_x = 0, original_y = 0;
     Random random = new Random();
-
+    boolean globalBool = false;
+    int globalStageCount = 0;
 
     public ApplicationNew(){
         super("Java AWT Examples");
@@ -29,6 +31,7 @@ public class ApplicationNew extends Frame {
         };
 
         Stage stage = new RandomPointsStage();
+        addKeyListener(this);
 
         new Thread(() -> {
             while (true) {
@@ -48,6 +51,7 @@ public class ApplicationNew extends Frame {
         awtGraphicsDemo.setVisible(true);
     }
 
+
     private void prepareGUI(){
         setSize(800,800);
         addWindowListener(new WindowAdapter() {
@@ -58,13 +62,44 @@ public class ApplicationNew extends Frame {
     }
 
     @Override
+    public void paint(Graphics g){
+        //KeyEventInfo keyInfo = new KeyEventInfo("KeyEventInfo");
+        ///int id = keyInfo.getKeyTyped().getID();
+        int stageOne = 1;
+        int stageTwo = 2;
+        if(globalBool== true){
+            if(globalStageCount == stageOne){
+                    paintFirstStage(g);
+            }
+            else if(globalStageCount == stageTwo){
+                paintWangTiling(g);
 
-    public void paint(Graphics g) {
+            }
+
+        }
+
+
+
+    }
+
+    public void paintFirstStage(Graphics g) {
+        Graphics2D g2 = (Graphics2D)g;
+        for (int i = 0; i < tiles.length; i++) {
+            Tile tile = tiles[i];
+            tile.draw(g2, 0, 100 + (int) (i * size * 1.1));
+        }
+
+        if (this.stageImage != null) {
+            g2.drawImage(this.stageImage, 200, 200, null);
+        }
+    }
+
+    public void paintWangTiling(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
         Tile[][] globalPervUpperTile = new Tile[TILES_X][TILES_Y];
-        for(int row = 0; row < 3; row++) {
+        for(int row = 0; row < TILES_X; row++) {
             Tile pervTile = null;
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < TILES_Y; i++) {
 
                 Tile tile = tiles[i];
 
@@ -242,4 +277,67 @@ public class ApplicationNew extends Frame {
     {
         return random.nextInt(tiles.length);
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            globalBool = true;
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            globalBool = true;
+            globalStageCount++;
+        }
+
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            globalBool = true;
+            globalStageCount--;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            globalBool = true;
+            globalStageCount++;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            globalBool = true;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            globalBool = true;
+        }
+    }
+
+
+
+
+
+/*
+    @Override
+    public void keyTyped(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            System.out.println("Space key typed");
+        }
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            System.out.println("Space key pressed");
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            System.out.println("Space key Released");
+        }
+    }
+
+ */
 }
