@@ -1,13 +1,16 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Arrays;
+import java.util.OptionalInt;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class ApplicationNew extends Frame implements KeyListener {
     private final Tile[] tiles;
     private final int size = 50;
     private Image stageImage = null;
     private final Random random = new Random();
-    private int globalStageCount = 1;
+    private int stageIndex = 1;
     private final Tile[][] fixedTiling;
 
     public ApplicationNew() {
@@ -32,7 +35,10 @@ public class ApplicationNew extends Frame implements KeyListener {
         new Thread(() -> {
             while (true) {
                 ApplicationNew.this.repaint();
-                this.stageImage = stage.step(tiles);
+                if (stageIndex == 1) {
+                    this.stageImage = stage.step(tiles);
+                }
+
                 try {
                     Thread.sleep(stage.interval);
                 } catch (InterruptedException e) {
@@ -56,34 +62,81 @@ public class ApplicationNew extends Frame implements KeyListener {
         });
     }
 
+    public void update(Graphics g) {
+        paint(g);
+    }
+
     @Override
     public void paint(Graphics g) {
-        switch (globalStageCount) {
-            case 1 -> paintFirstStage(g);
-            case 2 -> paintWangTiling(g);
+        Image buffer = createImage(getWidth(), getHeight());
+        Graphics bufferGraphics = buffer.getGraphics();
+
+        switch (stageIndex) {
+            case 1 -> paintFirstStage(bufferGraphics);
+            case 2 -> paintWangTiling(bufferGraphics);
         }
 
-        drawTiling((Graphics2D) g, fixedTiling, 100, 400);
+        drawTiling((Graphics2D) bufferGraphics, fixedTiling, 100, 400);
+
+        g.drawImage(buffer, 0, 0, this);
     }
 
     public void paintFirstStage(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         for (int i = 0; i < tiles.length; i++) {
             Tile tile = tiles[i];
-            tile.draw(g2, 0, 100 + (int) (i * size * 1.1));
+            tile.draw(g2, 100 + i * (size + 14), 100);
         }
         if (this.stageImage != null) {
             g2.drawImage(this.stageImage, 200, 200, null);
         }
     }
 
-    public void paintWangTiling(Graphics g) {
+    public synchronized void paintWangTiling(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        int TILES_X = 3;
-        int TILES_Y = 3;
-        Tile[][] tiling = createTiling(TILES_X, TILES_Y);
+        Tile[][] tiling = createTiling(3, 3);
 
-        drawTiling(g2, tiling, 0, 100);
+        Tile.Point[] points = IntStream.range(0, 3).mapToObj(
+                x -> IntStream.range(0, 3).mapToObj(
+                        y -> tiling[y][x].points.stream()
+                                .map(point -> new Tile.Point(size * x + point.x, size * y + point.y))
+                ).flatMap(s -> s)
+        ).flatMap(s -> s).toArray(Tile.Point[]::new);
+
+        int[] counts = Arrays.stream(points).mapToInt(p -> 0).toArray();
+        Tile.Point[] totals = Arrays.stream(points).map(p -> new Tile.Point(0, 0)).toArray(Tile.Point[]::new);
+
+        for (int x = 0; x < 3 * size; x++) {
+            for (int y = 0; y < 3 * size; y++) {
+                double d = Double.POSITIVE_INFINITY;
+                int index = -1;
+                for (int i = 0; i < points.length; i++) {
+                    Tile.Point point = points[i];
+                    double d2 = (x - point.x) * (x - point.x) + (y - point.y) * (y - point.y);
+                    if (d2 < d) {
+                        index = i;
+                        d = d2;
+                    }
+                }
+                counts[index]++;
+                totals[index].x += x;
+                totals[index].y += y;
+            }
+        }
+
+        tiling[1][1].points.forEach(point -> {
+            OptionalInt indexOption = IntStream.range(0, points.length).filter(
+                    i -> points[i].equals(new Tile.Point(point.x + size, point.y + size))
+            ).findFirst();
+            if (indexOption.isEmpty()) return;
+            int index = indexOption.getAsInt();
+            point.x = Math.min(size, Math.max(0, totals[index].x / counts[index] - size));
+            point.y = Math.min(size, Math.max(0, totals[index].y / counts[index] - size));
+        });
+
+        tiling[1][1].redraw();
+
+        drawTiling(g2, tiling, 300, 100);
 
         if (this.stageImage != null) {
             g2.drawImage(this.stageImage, 200, 200, null);
@@ -159,18 +212,20 @@ public class ApplicationNew extends Frame implements KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent keyEvent) { }
+    public void keyTyped(KeyEvent keyEvent) {
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            globalStageCount++;
+            stageIndex++;
         }
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            globalStageCount--;
+            stageIndex--;
         }
     }
 
     @Override
-    public void keyReleased(KeyEvent keyEvent) { }
+    public void keyReleased(KeyEvent keyEvent) {
+    }
 }

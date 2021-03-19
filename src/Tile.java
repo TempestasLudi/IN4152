@@ -3,6 +3,7 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Tile {
     public final List<Point> points = new ArrayList<Point>();
@@ -20,8 +21,6 @@ public class Tile {
         this.buffer = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
         this.redraw();
     }
-
-
 
     public void redraw() {
         Graphics2D g = (Graphics2D) this.buffer.getGraphics();
@@ -42,7 +41,7 @@ public class Tile {
 
         g.setColor(Color.BLACK);
         for (Point point : points) {
-            g.fill(point);
+            g.fill(point.getShape());
         }
     }
 
@@ -50,11 +49,29 @@ public class Tile {
         g.drawImage(buffer, x, y, null);
     }
 
-    static public class Point extends Ellipse2D.Double {
+    static public class Point {
+        public double x, y;
         public Point(double x, double y) {
-            super(x - 3, y - 3, 6, 6);
+            this.x = x;
+            this.y = y;
+        }
+
+        public Shape getShape() {
+            return new Ellipse2D.Double(this.x - 3, this.y - 3, 6, 6);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Point point = (Point) o;
+            return Double.compare(point.x, x) == 0 &&
+                    Double.compare(point.y, y) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
         }
     }
-
-
 }
